@@ -1,68 +1,40 @@
 # onyx-sim-capacity-lab
 
-`onyx-sim-capacity-lab` is a focused C# codebase around create a C# reference implementation for capacity workflows, centered on visual model generation, layout fixtures, and stable geometry snapshots. It is meant to be easy to inspect, run, and extend without a hosted service.
-
-## Onyx Sim Capacity Lab Walkthrough
-
-I would read the project from the outside in: command, fixture, model, then roadmap. That keeps the simulations idea grounded in files that can be checked locally.
+`onyx-sim-capacity-lab` is a compact C# repository for simulations, centered on this goal: Create a C# reference implementation for capacity workflows, centered on visual model generation, layout fixtures, and stable geometry snapshots.
 
 ## Reason For The Project
 
-The goal is to capture the core behavior in code and make the surrounding assumptions obvious. A reader should be able to run the verifier, open the fixtures, and understand why each decision was made.
+The point is to make a small domain rule concrete enough that a reader can change it and immediately see what broke.
 
-## Capabilities
+## Onyx Sim Capacity Lab Review Notes
 
-- Models input state with deterministic scoring and explicit review decisions.
-- Uses fixture data to keep policy checks changes visible in code review.
-- Includes extended examples for fixture data, including `surge` and `degraded`.
-- Documents local reports tradeoffs in `docs/operations.md`.
-- Runs locally with a single verification command and no external credentials.
+`stale` and `stress` are the cases worth reading first. They show the optimistic and cautious ends of the fixture.
+
+## What It Does
+
+- `fixtures/domain_review.csv` adds cases for input pressure and state drift.
+- `metadata/domain-review.json` records the same cases in structured form.
+- `config/review-profile.json` captures the read order and the two review questions.
+- `examples/onyx-sim-capacity-walkthrough.md` walks through the case spread.
+- The C# code includes a review path for `input pressure` and `state drift`.
+- `docs/field-notes.md` explains the strongest and weakest cases.
 
 ## How It Is Put Together
 
-The design is intentionally direct: parse or construct a signal, score it, classify it, and verify the expected branch. This makes the repository useful for studying simulations behavior without needing a service or database unless the language project itself is SQL. The C# code keeps the core model in a small static API and runs checks through the executable path.
+The repository has two validation layers: the original compact policy fixture and the domain review fixture. They are separate so one can change without hiding failures in the other.
 
-## Where Things Live
+The added C# path is deliberately direct, with fixtures doing most of the explaining.
 
-- `src`: primary implementation
-- `tests`: verification harness
-- `fixtures`: compact golden scenarios
-- `examples`: expanded scenario set
-- `metadata`: project constants and verification metadata
-- `docs`: operations and extension notes
-- `scripts`: local verification and audit commands
-
-## Getting It Running
-
-Use a normal shell with C# available on `PATH`. The verifier is written as a PowerShell script because the portfolio was assembled on Windows.
-
-## Command Examples
+## Run It
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1
 ```
 
-This runs the language-level build or test path against the compact fixture set.
+## Check It
 
-## Check The Work
+The same command runs the local verification path. The highest-scoring domain case is `stale` at 233, which lands in `ship`. The most cautious case is `stress` at 151, which lands in `ship`.
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/audit.ps1
-```
+## Boundaries
 
-The audit command checks repository structure and README constraints before it delegates to the verifier.
-
-## Data Notes
-
-The extended cases are not random smoke tests. `degraded` keeps pressure on the review path, while `surge` shows the model when capacity and weight are strong enough to clear the threshold.
-
-## Tradeoffs
-
-The repository favors determinism over breadth. It does not pull live data, keep secrets, or depend on network access for verification.
-
-## Possible Extensions
-
-- Add malformed input fixtures so the failure path is as visible as the happy path.
-- Split the scoring constants into a typed configuration object and validate it before use.
-- Add a comparison mode that shows how decisions change when one signal is adjusted.
-- Add one more simulations fixture that focuses on a malformed or borderline input.
+The repository is intentionally scoped to local checks. I would expand it by adding adversarial fixtures before adding features.
